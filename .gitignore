@@ -1,0 +1,6 @@
+# Ignore inference.py
+inference.py
+
+# Ignore contents of weights directory, but not the directory itself
+weights/*
+!.gitkeep
