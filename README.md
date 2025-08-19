@@ -56,7 +56,7 @@ FGRestore/
 |-- weights/
 |   |-- FGResQ.pth
 |   |-- Degradation.pth
-|-- FGResQ/
+|-- model/
 |   |-- FGResQ.py
 |-- requirements.txt
 |-- README.md
@@ -71,16 +71,16 @@ The `FGResQInferenceModel` provides two main functionalities: scoring a single i
 First, import and initialize the `FGResQInferenceModel`.
 
 ```python
-from FGResQ.FGResQ import FGResQInferenceModel
+from model.FGResQ import FGResQ
 
 # Path to the main model weights
 model_path = "weights/FGResQ.pth"
 
 # Initialize the inference engine
-model = FGResQInferenceModel(model_path=model_path)
+model = FGResQ(model_path=model_path)
 ```
 
-### Single Image Mode: Quality Scoring
+### 1. Single Image Mode: Quality Scoring
 
 You can get a quality score for a single image. The score typically ranges from 0 to 1, where a higher score indicates better quality.
 
@@ -90,7 +90,7 @@ quality_score = model.predict_single(image_path)
 print(f"The quality score for the image is: {quality_score:.4f}")
 ```
 
-### Dual Image Mode: Quality Comparison
+### 2. Dual Image Mode: Quality Comparison
 
 You can also compare two images to determine which one has better quality.
 
