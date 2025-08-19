@@ -33,10 +33,10 @@ class DualBranch(nn.Module):
         super(DualBranch, self).__init__()
         self.clip_freeze = clip_freeze
 
-        # 加载 CLIP 模型
+        # Load CLIP model
         self.clip_model, feature_size = load_clip_model(clip_model, clip_freeze, precision)
 
-        # 初始化 CLIP 视觉模型
+        # Initialize CLIP vision model for task classification
         self.task_cls_clip = CLIPVisionModel.from_pretrained("openai/clip-vit-base-patch16")
         
 
@@ -59,49 +59,49 @@ class DualBranch(nn.Module):
             self.prompt_mlp.weight.fill_(0.0)
             self.prompt_mlp.bias.fill_(0.0)
         
-        # 加载预训练的权重
+        # Load pre-trained weights
         self._load_pretrained_weights("weights/Degradation.pth")
 
 
         for param in self.task_cls_clip.parameters():
             param.requires_grad = False
 
-        # 解冻最后两层
-        # for i in range(10, 12):  # 第10层和第11层
+        # Unfreeze the last two layers
+        # for i in range(10, 12):  # Layers 10 and 11
         #     for param in self.task_cls_clip.vision_model.encoder.layers[i].parameters():
         #         param.requires_grad = True
     def _load_pretrained_weights(self, state_dict_path):
         """
-        加载预训练权重，包括 CLIP 模型和分类头的权重
+        Load pre-trained weights, including the CLIP model and classification head.
         """
-        # 加载状态字典
+        # Load state dictionary
         state_dict = torch.load(state_dict_path)
         
-        # 分离 CLIP 模型和分类头的权重
+        # Separate weights for CLIP model and classification head
         clip_state_dict = {}
 
         for key, value in state_dict.items():
             if key.startswith('clip_model.'):
-                # 移除 'clip_model.' 前缀，用于 CLIP 模型
+                # Remove 'clip_model.' prefix for the CLIP model
                 new_key = key.replace('clip_model.', '')
                 clip_state_dict[new_key] = value
             # elif key in ['head.weight', 'head.bias']:
-            #     # 保存分类头的权重
+            #     # Save weights for the classification head
             #     head_state_dict[key] = value
         
-        # 加载 CLIP 模型的权重
+        # Load weights for the CLIP model
         self.task_cls_clip.load_state_dict(clip_state_dict, strict=False)
-        print("成功加载 CLIP 模型权重")
+        print("Successfully loaded CLIP model weights")
         
     def forward(self, x0, x1 = None):
         # features, _ = self.clip_model.encode_image(x)
         if x1 is None:
-            # 图像特征
+            # Image features
             features0 = self.clip_model(x0)['pooler_output']
-            # 分类特征
+            # Classification features
             task_features0 = self.task_cls_clip(x0)['pooler_output']
 
-            # 学习分类特征
+            # Learn classification features
             task_embedding = torch.softmax(self.task_mlp(task_features0), dim=1) * self.prompt
             task_embedding = self.prompt_mlp(task_embedding)
 
@@ -113,10 +113,10 @@ class DualBranch(nn.Module):
             return quality, None, None
         elif x1 is not None:
             # features_, _ = self.clip_model.encode_image(x_local)
-            # 图像特征
+            # Image features
             features0 = self.clip_model(x0)['pooler_output']
             features1 = self.clip_model(x1)['pooler_output']
-            # 分类特征
+            # Classification features
             task_features0 = self.task_cls_clip(x0)['pooler_output']
             task_features1 = self.task_cls_clip(x1)['pooler_output']
 
@@ -146,21 +146,15 @@ class DualBranch(nn.Module):
             return quality0, quality1, compare_quality
 
 class FGResQ:
-    """
-    用于图像质量评估和比较的推理模型。
-
-    这个类加载一个预训练的IQA模型，并提供接口来预测
-    单个图像的质量分数或比较一对图像的质量。
-    """
     def __init__(self, model_path, clip_model="openai/clip-vit-base-patch16", input_size=224, device=None):
         """
-        初始化推理模型。
+        Initializes the inference model.
 
         Args:
-            model_path (str): 预训练模型检查点的路径 (.pth or .safetensors)。
-            clip_model (str): 要使用的CLIP模型的名称。
-            input_size (int): 模型的输入图像大小。
-            device (str, optional): 运行推理的设备 ('cuda' or 'cpu')。如果为None，则自动检测。
+            model_path (str): Path to the pre-trained model checkpoint (.pth or .safetensors).
+            clip_model (str): Name of the CLIP model to use.
+            input_size (int): Input image size for the model.
+            device (str, optional): Device to run inference on ('cuda' or 'cpu'). Auto-detected if None.
         """
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -169,19 +163,19 @@ class FGResQ:
         
         print(f"Using device: {self.device}")
 
-        # 加载模型
+        # Load the model
         self.model = DualBranch(clip_model=clip_model, clip_freeze=True, precision='fp32')
         
-        # 加载模型权重
+        # Load model weights
         try:
             state_dict = torch.load(model_path, map_location=self.device)
-            # 兼容不同保存方式的state_dict
+            # Handle different ways of saving state_dict
             if 'model' in state_dict:
                 state_dict = state_dict['model']
             if 'state_dict' in state_dict:
                 state_dict = state_dict['state_dict']
             
-            # 移除 'module.' 前缀（如果存在）
+            # Remove 'module.' prefix if it exists
             state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
 
             self.model.load_state_dict(state_dict)
@@ -193,7 +187,7 @@ class FGResQ:
         self.model.to(self.device)
         self.model.eval()
 
-        # 定义图像预处理
+        # Define image preprocessing
         self.transform = transforms.Compose([
             transforms.Resize((input_size, input_size)),
             transforms.ToTensor(),
@@ -201,7 +195,7 @@ class FGResQ:
         ])
 
     def _preprocess_image(self, image_path):
-        """加载并预处理单个图像"""
+        """Load and preprocess a single image."""
         try:
             image = Image.open(image_path).convert("RGB")
             image_tensor = self.transform(image).unsqueeze(0)
@@ -216,13 +210,7 @@ class FGResQ:
     @torch.no_grad()
     def predict_single(self, image_path):
         """
-        预测单个图像的质量分数。
-
-        Args:
-            image_path (str): 输入图像的路径。
-
-        Returns:
-            float: 预测的质量分数。如果出错则返回None。
+        Predict the quality score of a single image.
         """
         image_tensor = self._preprocess_image(image_path)
         if image_tensor is None:
@@ -234,16 +222,7 @@ class FGResQ:
     @torch.no_grad()
     def predict_pair(self, image_path1, image_path2):
         """
-        比较两个图像的质量。
-
-        Args:
-            image_path1 (str): 第一个图像的路径。
-            image_path2 (str): 第二个图像的路径。
-
-        Returns:
-            dict: 包含两个图像的质量分数和比较结果的字典。
-                  {'quality1': float, 'quality2': float, 'comparison': str, 'comparison_raw': list}
-                  如果出错则返回None。
+        Compare the quality of two images.
         """
         image_tensor1 = self._preprocess_image(image_path1)
         image_tensor2 = self._preprocess_image(image_path2)
@@ -256,7 +235,7 @@ class FGResQ:
         quality1 = quality1.squeeze().item()
         quality2 = quality2.squeeze().item()
         
-        # 解读比较结果
+        # Interpret the comparison result
         compare_probs = torch.softmax(compare_result, dim=-1).squeeze().cpu().numpy()
         prediction = np.argmax(compare_probs)
         
