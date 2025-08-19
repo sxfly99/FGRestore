@@ -6,11 +6,11 @@
 <h1 align="center">Fine-grained Image Quality Assessment for Perceptual Image Restoration</h1>
 
 <div align="center">
-    Xiangfei Sheng<sup>1*</sup>,
-    Xiaofeng Pan<sup>1*</sup>,
-    Zhichao Yang<sup>1</sup>,
-    Pengfei Chen<sup>1</sup>,
-    Leida Li<sup>1#</sup>
+    <a href="https://github.com/sxfly99">Xiangfei Sheng</a><sup>1*</sup>,
+    <a href="https://github.com/pxf0429">Xiaofeng Pan</a><sup>1*</sup>,
+    <a href="https://github.com/yzc-ippl">Zhichao Yang</a><sup>1</sup>,
+    <a href="https://faculty.xidian.edu.cn/cpf/">Pengfei Chen</a><sup>1</sup>,
+    <a href="https://web.xidian.edu.cn/ldli/">Leida Li</a><sup>1#</sup>
 </div>
 
 <div align="center">
