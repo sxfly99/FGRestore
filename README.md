@@ -64,11 +64,11 @@ FGRestore/
 
 ## Usage
 
-The `FGResQInferenceModel` provides two main functionalities: scoring a single image and comparing a pair of images.
+The `FGResQ` provides two main functionalities: scoring a single image and comparing a pair of images.
 
 ### Initialize the Scorer
 
-First, import and initialize the `FGResQInferenceModel`.
+First, import and initialize the `FGResQ`.
 
 ```python
 from model.FGResQ import FGResQ
