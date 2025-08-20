@@ -80,7 +80,7 @@ model_path = "weights/FGResQ.pth"
 model = FGResQ(model_path=model_path)
 ```
 
-### 1. Single Image Mode: Quality Scoring
+### 1. Single Image Input Mode: Quality Scoring
 
 You can get a quality score for a single image. The score typically ranges from 0 to 1, where a higher score indicates better quality.
 
@@ -90,7 +90,7 @@ quality_score = model.predict_single(image_path)
 print(f"The quality score for the image is: {quality_score:.4f}")
 ```
 
-### 2. Dual Image Mode: Quality Comparison
+### 2. Pairwise Image Input Mode: Quality Ranking
 
 You can also compare two images to determine which one has better quality.
 
