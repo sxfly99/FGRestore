@@ -106,3 +106,16 @@ print(f"Comparison: {comparison_result['comparison']}")
 
 print(f"Raw output probabilities: {comparison_result['comparison_raw']}")
 # Example output: "[0.8, 0.1, 0.1]" (Probabilities for Image1 > Image2, Image2 > Image1, Image1 ≈ Image2)
+```
+## Citation
+
+If you find this work is useful, pleaes cite our paper!
+
+```bibtex
+
+@article{sheng2025fg,
+  title={Fine-grained Image Quality Assessment for Perceptual Image Restoration},
+  author={Sheng, Xiangfei and Pan, Xiaofeng and Yang, Zhichao and Chen, Pengfei and Li, Leida},
+  journal={arXiv preprint arXiv:2508.14475},
+  year={2025}
+}
